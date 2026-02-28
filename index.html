@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Exam</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Cairo:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #008080; --secondary: #004d4d; --accent: #ff9800; --bg: #f0f4f8; --text: #2d3436; --white: #ffffff; --success: #2ecc71; --error: #e74c3c; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: var(--white); width: 95%; max-width: 700px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 25px; text-align: center; position: relative; }
+        
+        header h1 { color: var(--primary); margin: 0; font-size: 1.4rem; letter-spacing: 0.5px; }
+        .btn { background: linear-gradient(45deg, var(--primary), var(--secondary)); color: white; border: none; padding: 12px 30px; font-size: 1rem; border-radius: 50px; cursor: pointer; font-family: 'Poppins', sans-serif; margin-top: 15px; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,128,128,0.3); font-weight: 600; width: 100%; max-width: 250px; }
+        .btn:hover { transform: scale(1.02); }
+        
+        .question-box { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; text-align: left; color: var(--secondary); line-height: 1.5; }
+        .badge { display: inline-block; background: var(--accent); color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 15px; font-weight: bold; }
+        
+        .options { display: flex; flex-direction: column; gap: 10px; }
+        .option-btn { background: var(--white); border: 2px solid #e0e0e0; padding: 15px; border-radius: 12px; cursor: pointer; text-align: left; transition: 0.3s; font-weight: 500; color: #555; position: relative; }
+        .option-btn:hover { background: #f9f9f9; border-color: var(--primary); }
+        .option-btn.correct { background: #d4edda; border-color: var(--success); color: #155724; }
+        .option-btn.wrong { background: #f8d7da; border-color: var(--error); color: #721c24; }
+        .option-btn.disabled { pointer-events: none; opacity: 0.8; }
+        
+        /* Explanation Box - Modified for Arabic */
+        .explanation-box { display: none; background: #e8f4f8; border-right: 5px solid var(--primary); padding: 15px; margin-top: 20px; text-align: right; direction: rtl; border-radius: 8px; font-family: 'Cairo', sans-serif; font-size: 1rem; line-height: 1.6; }
+        
+        .screen { display: none; animation: fadeIn 0.4s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .progress-bar { width: 100%; height: 8px; background: #eee; margin: 20px 0; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s ease; }
+        
+        .contact-card { background: #f8f9fa; border: 1px dashed var(--primary); padding: 20px; border-radius: 12px; margin: 20px 0; }
+        .social-btns { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+        .social-link { text-decoration: none; padding: 10px 20px; border-radius: 50px; font-size: 0.9rem; color: white; }
+        .telegram { background: #0088cc; }
+        .whatsapp { background: #25d366; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="start-screen" class="screen active">
+        <header>
+            <h1>ElBadawi Med Academy 🩺</h1>
+            <p>Dr. El-Sayed El-Badawy</p>
+        </header>
+        <div style="margin: 25px 0;"><img src="https://cdn-icons-png.flaticon.com/512/3063/3063205.png" width="90"></div>
+        <h3 id="quiz-title-display" style="color:var(--accent);">Medical Exam</h3>
+        <p>30 Hard MCQs | Clinical Cases Included</p>
+        <button class="btn" onclick="startQuiz()">Start Challenge</button>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+        <div id="timer" style="color:var(--error); font-weight:bold; margin-bottom:10px;"></div>
+        
+        <div class="question-box" id="question-text"></div>
+        <div class="options" id="options-container"></div>
+        
+        <div id="explanation" class="explanation-box">
+            <strong>💡 دكتور السيد بيوضحلك:</strong><br>
+            <span id="explanation-text"></span>
+        </div>
+        
+        <button id="next-btn" class="btn" style="display:none;" onclick="nextQuestion()">Next Question ➡️</button>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h2>Exam Complete!</h2>
+        <div style="font-size:3rem; font-weight:bold; color:var(--primary);" id="final-score">0%</div>
+        <div style="background:var(--accent); color:white; padding:5px 20px; border-radius:20px; font-weight:700; margin-bottom:20px;" id="rank-text">Student</div>
+        
+        <div class="contact-card">
+            <strong>👨‍⚕️ Send Score to Dr. El-Sayed:</strong>
+            <p style="margin:5px 0 10px 0;">Please forward your result for evaluation.</p>
+            <div style="font-weight:600;">📱 01065615878 | 💬 @ElBadawi010</div>
+            <div class="social-btns">
+                <a href="#" id="tg-share" target="_blank" class="social-link telegram">Telegram</a>
+                <a href="#" id="wa-share" target="_blank" class="social-link whatsapp">WhatsApp</a>
+            </div>
+        </div>
+        <button class="btn" onclick="location.reload()">Restart 🔄</button>
+    </div>
+    <footer style="margin-top:25px; font-size:0.8rem; color:#aaa;">Prepared by: Dr. El-Sayed El-Badawy</footer>
+</div>
+
+<audio id="sound-correct" src="https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg"></audio>
+<audio id="sound-wrong" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
+<script>
+    // ==========================================
+    // AI INSTRUCTIONS: FILL THIS ARRAY WITH 30 QUESTIONS
+    // Explanation MUST be in Egyptian Arabic + English Terms + [Page No]
+    // ==========================================
+    const quizTitle = "VITAL SIGNS (Prof. Magda & Prof. Rehab)"; 
+
+    const mcqQuestions = [
+        { 
+           question: "A nurse is measuring the temperature of a 4-year-old child. Which of the following sites is CONTRAINDICATED?", 
+           options: ["Axillary", "Tympanic", "Oral", "Rectal"], 
+           correct: 2, 
+           explanation: "بص يا دكتور، الـ Oral thermometer ممنوع تماماً (Contraindicated) للأطفال تحت سن 6 سنين (Child under 6 years) عشان الأمان. [Page: 11]" 
+        },
+        { 
+           question: "A patient presents with a body temperature of 41°C. How is this condition medically termed?", 
+           options: ["Pyrexia", "Hyperpyrexia", "Hypothermia", "Frostbite"], 
+           correct: 1, 
+           explanation: "لما الحرارة توصل لـ 41°C أو (105°F) دي بنسميها Hyperpyrexia، ودي تعتبر very high temperature. [Page: 5]" 
+        },
+        { 
+           question: "You are assessing a patient's temperature via the axillary route. The thermometer reads 36.5°C. What is the recorded core temperature?", 
+           options: ["36.0°C", "36.5°C", "37.0°C", "37.5°C"], 
+           correct: 2, 
+           explanation: "في الـ Axillary measurement، لازم تزود 0.5 درجة (Add 0.5 C) على القراية عشان تحسب الـ Core temp صح. فلو القراية 36.5 تبقى النتيجة 37. [Page: 12]" 
+        },
+        { 
+           question: "Why is the Oral temperature considered reliable when placed in the sublingual pocket?", 
+           options: ["It is the most comfortable site", "It is close to the sublingual artery", "It is free from bacteria", "It is not affected by breathing"], 
+           correct: 1, 
+           explanation: "المنطقة دي (Sublingual pocket) قريبة جداً من الـ Sublingual artery، وعشان كده هي بتعكس الـ Changes in core body temperature بدقة. [Page: 10]" 
+        },
+        { 
+           question: "A patient with hemorrhoids requires a temperature check. Which site should be avoided?", 
+           options: ["Oral", "Tympanic", "Axillary", "Rectal"], 
+           correct: 3, 
+           explanation: "الـ Rectal thermometer ممنوع (Contraindicated) في حالات الـ Rectal disorders زي الـ Hemorrhoids أو الـ Fissures. [Page: 14]" 
+        },
+        { 
+           question: "Which of the following describes 'Remittent Fever'?", 
+           options: ["Temperature alternates between fever and normal at regular intervals", "Fluctuates minimally but always remains elevated", "Wide range of fluctuations over 24h, all above normal", "Short febrile periods interspersed with days of normal temperature"], 
+           correct: 2, 
+           explanation: "الـ Remittent Fever الحرارة بتلعب (Fluctuates) بشكل كبير (Wide range) بس خلي بالك، كلها بتفضل فوق الطبيعي (All above normal). [Page: 16]" 
+        },
+        { 
+           question: "A patient's respiratory rate is 8 breaths per minute. This is documented as:", 
+           options: ["Eupnea", "Tachypnea", "Bradypnea", "Apnea"], 
+           correct: 2, 
+           explanation: "لما الـ Respiratory rate يكون 10 أو أقل (10 or fewer)، دي بنسميها Bradypnea. [Page: 21]" 
+        },
+        { 
+           question: "Which condition can result in a FALSELY LOW pulse oximetry reading?", 
+           options: ["Hyperthermia", "Hypertension", "Motion/Shivering", "Severe Anemia"], 
+           correct: 2, 
+           explanation: "الحركة زي الـ Shivering أو الـ Seizures ممكن تخلي جهاز الـ Pulse Oximeter يدي قرايات مش دقيقة (Limitations). [Page: 24]" 
+        },
+        { 
+           question: "The pulse wave is created by the contraction of which heart chamber?", 
+           options: ["Right Atrium", "Right Ventricle", "Left Atrium", "Left Ventricle"], 
+           correct: 3, 
+           explanation: "الـ Pulse wave بتتكون لما الـ Left Ventricle ينقبض (Contraction) ويضخ الدم في الشرايين. [Page: 29]" 
+        },
+        { 
+           question: "When examining the Radial Pulse, which finger is placed distal to the heart to obliterate backflow?", 
+           options: ["Thumb", "Index finger", "Middle finger", "Ring finger"], 
+           correct: 1, 
+           explanation: "الـ Index finger بنحطه Distal from heart عشان يقفل (Obliterate) الـ Back flow اللي جاي من الـ Ulnar artery. [Page: 35]" 
+        },
+        { 
+           question: "Which artery is palpated just medial to the biceps tendon?", 
+           options: ["Radial", "Ulnar", "Brachial", "Axillary"], 
+           correct: 2, 
+           explanation: "مكان الـ Brachial pulse بالظبط هو Just medial to biceps tendon. [Page: 37]" 
+        },
+        { 
+           question: "What is a critical precaution when assessing the Carotid pulse?", 
+           options: ["Press firmly for 10 seconds", "Use the thumb of the same side", "Never press both carotids at the same time", "Assess while the patient is standing"], 
+           correct: 2, 
+           explanation: "أوعى تضغط على الناحيتين في نفس الوقت (Never press both carotids at same time) عشان ماتقطعش الدم عن المخ. [Page: 38]" 
+        },
+        { 
+           question: "Where is the Dorsalis Pedis pulse felt?", 
+           options: ["Behind the medial malleolus", "Lateral to the extensor tendon of the big toe", "In the popliteal fossa", "Just below the inguinal ligament"], 
+           correct: 1, 
+           explanation: "الـ Dorsalis Pedis بنحسه على وش الرجل (Dorsum of foot)، وتحديداً Lateral to the extensor tendon of the big toe. [Page: 42]" 
+        },
+        { 
+           question: "A heart rate of 110 beats per minute in an adult is classified as:", 
+           options: ["Bradycardia", "Normal", "Tachycardia", "Arrhythmia"], 
+           correct: 2, 
+           explanation: "أي Heart rate يزيد عن 100 في الـ Adult بنسميه Tachycardia. [Page: 48]" 
+        },
+        { 
+           question: "For an irregular pulse, how long should you count the beats?", 
+           options: ["10 seconds", "15 seconds", "30 seconds", "One full minute"], 
+           correct: 3, 
+           explanation: "لو النبض مش منتظم (Irregular pulse)، لازم تعد لمدة دقيقة كاملة (One minute) عشان الرقم يطلع صح. [Page: 47]" 
+        },
+        { 
+           question: "Which of the following is considered a normal respiratory rate range?", 
+           options: ["8-12 breaths/min", "12-20 breaths/min", "20-30 breaths/min", "60-100 breaths/min"], 
+           correct: 1, 
+           explanation: "المعدل الطبيعي للتنفس (Normal range of RR) هو من 12 لـ 20 breath / minute. [Page: 20]" 
+        },
+        { 
+           question: "Frostbite is characterized by freezing of body surface areas. Which areas are most affected?", 
+           options: ["Chest and abdomen", "Earlobes, fingers, and toes", "Thighs and arms", "Neck and back"], 
+           correct: 1, 
+           explanation: "الـ Frostbite بيحصل تجميد للأطراف زي الـ Earlobes, fingers, and toes في درجات الحرارة المنخفضة جداً. [Page: 5]" 
+        },
+        { 
+           question: "Which thermometer type senses reflected infrared emissions from the ear?", 
+           options: ["Digital thermometer", "Glass mercury thermometer", "Tympanic membrane thermometer", "Paper thermometer"], 
+           correct: 2, 
+           explanation: "الـ Tympanic thermometer هو اللي بيحس الـ Infrared emissions اللي خارجة من طبلة الأذن. [Page: 15]" 
+        },
+        { 
+           question: "Constant Fever is defined as:", 
+           options: ["Temperature fluctuates minimally but always remains elevated", "Temperature returns to normal once a day", "Fever alternates with normal days", "Wide fluctuations above normal"], 
+           correct: 0, 
+           explanation: "الـ Constant Fever الحرارة بتفضل عالية (Always elevated) والتغيير فيها بيكون بسيط جداً (Fluctuates minimally). [Page: 16]" 
+        },
+        { 
+           question: "Which site is considered unreliable for core temperature because it lacks main blood vessels?", 
+           options: ["Rectal", "Oral", "Axillary", "Tympanic"], 
+           correct: 2, 
+           explanation: "الـ Axilla مافيهاش Main blood vessels قريبة، عشان كده هي تعتبر Unreliable site للـ Core temp. [Page: 12]" 
+        },
+        { 
+           question: "Rectal temperature readings should be adjusted by:", 
+           options: ["Adding 0.5°C", "Reducing 0.5°C", "Adding 1.0°C", "Reducing 1.0°C"], 
+           correct: 1, 
+           explanation: "القراية من الـ Rectum بتكون أدق بس أعلى، فلازم ننقص 0.5 درجة (Reduce 0.5 C) عشان نوصل للقراية الفعلية. [Page: 13]" 
+        },
+        { 
+           question: "Which patient condition is a contraindication for using an Oral thermometer?", 
+           options: ["Patient with a leg fracture", "Patient on an Oxygen mask", "Patient with mild fever", "Patient with abdominal pain"], 
+           correct: 1, 
+           explanation: "المريض اللي حاطط Oxygen mask مينفعش نستخدم معاه Oral thermometer عشان هيضطر يشيل الماسك وده خطر. [Page: 11]" 
+        },
+        { 
+           question: "Apnea refers to:", 
+           options: ["Rapid breathing", "Slow breathing", "Cessation of breathing", "Difficulty breathing"], 
+           correct: 2, 
+           explanation: "كلمة Apnea معناها توقف النفس تماماً (Cessation of breathing). [Page: 21]" 
+        },
+        { 
+           question: "Which of the following can cause a pulse oximeter limitation?", 
+           options: ["Hyperthermia", "Nail polish", "High blood pressure", "Bradycardia"], 
+           correct: 1, 
+           explanation: "الـ Nail polish (طلاء الأظافر) بيمنع الضوء يعدي، فبيدي قراية غلط أو مش بيدي قراية خالص. [Page: 24]" 
+        },
+        { 
+           question: "Where is the Posterior Tibial pulse palpated?", 
+           options: ["Behind the knee", "Dorsum of the foot", "Behind the medial malleolus", "In the groin"], 
+           correct: 2, 
+           explanation: "مكان الـ Posterior Tibial pulse هو وراء العظمة البارزة في الأنكل من جوا (Medial Malleolus). [Page: 43]" 
+        },
+        { 
+           question: "Normal adult heart rate range is:", 
+           options: ["40-80 bpm", "60-100 bpm", "80-120 bpm", "12-20 bpm"], 
+           correct: 1, 
+           explanation: "المعدل الطبيعي لنبض القلب في الـ Adult (Heart Rate) هو من 60 لـ 100 دقة في الدقيقة. [Page: 47]" 
+        },
+        { 
+           question: "Intermittent Fever is described as:", 
+           options: ["Continuous high fever", "Alternating between fever and normal temps at regular intervals", "Short febrile periods with 1-2 days normal", "Fluctuating fever all above normal"], 
+           correct: 1, 
+           explanation: "الـ Intermittent Fever الحرارة بتطلع وتنزل للطبيعي (Alternates) في فترات منتظمة (Regular intervals). [Page: 16]" 
+        },
+        { 
+           question: "Which finger is kept proximal to the heart during Radial pulse examination?", 
+           options: ["Index finger", "Middle finger", "Ring finger", "Thumb"], 
+           correct: 2, 
+           explanation: "الـ Ring finger بنحطه Proximal to heart (ناحية القلب) أثناء فحص الـ Radial pulse. [Page: 35]" 
+        },
+        { 
+           question: "Which of the following is NOT a contraindication for rectal thermometry?", 
+           options: ["Rectal surgery", "Diarrhea", "Unconscious patient", "Hemorrhoids"], 
+           correct: 2, 
+           explanation: "الـ Unconscious patient مش ممنوع نستخدم معاه Rectal، بالعكس ده ممكن يكون حل، الممنوعات هي الجراحة، البواسير، والإسهال. [Page: 14]" 
+        },
+        { 
+           question: "Tachypnea is defined as a respiratory rate greater than:", 
+           options: ["20 breaths/min", "24 breaths/min", "30 breaths/min", "15 breaths/min"], 
+           correct: 1, 
+           explanation: "الـ Tachypnea يعني سرعة في التنفس، وتحديداً لما يكون المعدل أكتر من 24 نفس في الدقيقة (Greater than 24). [Page: 21]" 
+        }
+    ];
+    // ==========================================
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timer;
+    const timePerQuestion = 45; // Time in seconds
+
+    document.getElementById('quiz-title-display').innerText = quizTitle;
+
+    function startQuiz() {
+        document.getElementById('start-screen').classList.remove('active');
+        document.getElementById('quiz-screen').classList.add('active');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        resetState();
+        const currentQuestion = mcqQuestions[currentQuestionIndex];
+        document.getElementById('question-text').innerText = (currentQuestionIndex + 1) + ". " + currentQuestion.question;
+        
+        const progressPercent = ((currentQuestionIndex) / mcqQuestions.length) * 100;
+        document.getElementById('progress').style.width = progressPercent + "%";
+
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+
+        currentQuestion.options.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.innerText = option;
+            button.classList.add('option-btn');
+            button.onclick = () => selectAnswer(index, button);
+            container.appendChild(button);
+        });
+        
+        startTimer();
+    }
+
+    function resetState() {
+        clearInterval(timer);
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('explanation').style.display = 'none';
+        document.getElementById('timer').innerText = '';
+    }
+
+    function startTimer() {
+        let timeLeft = timePerQuestion;
+        document.getElementById('timer').innerText = `⏳ ${timeLeft}s`;
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = `⏳ ${timeLeft}s`;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                disableOptions();
+                const currentQuestion = mcqQuestions[currentQuestionIndex];
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons[currentQuestion.correct].classList.add('correct');
+                playSound('wrong');
+                showExplanation();
+                document.getElementById('next-btn').style.display = 'block';
+            }
+        }, 1000);
+    }
+
+    function selectAnswer(selectedIndex, btn) {
+        clearInterval(timer);
+        const currentQuestion = mcqQuestions[currentQuestionIndex];
+        const correctIndex = currentQuestion.correct;
+        const allButtons = document.querySelectorAll('.option-btn');
+
+        if (selectedIndex === correctIndex) {
+            btn.classList.add('correct');
+            score++;
+            playSound('correct');
+        } else {
+            btn.classList.add('wrong');
+            allButtons[correctIndex].classList.add('correct');
+            playSound('wrong');
+        }
+
+        disableOptions();
+        showExplanation();
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function disableOptions() {
+        const allButtons = document.querySelectorAll('.option-btn');
+        allButtons.forEach(button => button.classList.add('disabled'));
+    }
+
+    function showExplanation() {
+        const currentQuestion = mcqQuestions[currentQuestionIndex];
+        document.getElementById('explanation-text').innerText = currentQuestion.explanation;
+        document.getElementById('explanation').style.display = 'block';
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < mcqQuestions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById('quiz-screen').classList.remove('active');
+        document.getElementById('result-screen').classList.add('active');
+        
+        const percentage = Math.round((score / mcqQuestions.length) * 100);
+        document.getElementById('final-score').innerText = percentage + "%";
+        
+        let rank = "Fail (راسب)";
+        if (percentage >= 90) rank = "Excellent (ممتاز) 🌟";
+        else if (percentage >= 80) rank = "Very Good (جيد جداً) 👏";
+        else if (percentage >= 65) rank = "Good (جيد) 👍";
+        else if (percentage >= 50) rank = "Pass (مقبول) 😐";
+        
+        document.getElementById('rank-text').innerText = rank;
+
+        const message = `Hello Dr. El-Sayed, I completed the exam: [${quizTitle}]\nScore: ${percentage}% (${score}/${mcqQuestions.length})\nRank: ${rank}`;
+        const encodedMsg = encodeURIComponent(message);
+        
+        document.getElementById('tg-share').href = `https://t.me/ELBADAWI010?text=${encodedMsg}`;
+        document.getElementById('wa-share').href = `https://wa.me/201065615878?text=${encodedMsg}`;
+    }
+
+    function playSound(type) {
+        const id = type === 'correct' ? 'sound-correct' : 'sound-wrong';
+        document.getElementById(id).play().catch(e => {});
+    }
+</script>
+</body>
+</html>
